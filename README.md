@@ -53,27 +53,39 @@ Função do Sistema de Recomendação. Coleta de Informações. Estratégias de 
 
 ```
 .
-├── 2026.2-SistemasDeRecomendacao-planoDeEnsino.pdf   # plano de ensino oficial
-├── Atividades/                                       # atividades práticas da disciplina
-│   ├── Filtragem_colaborativa_baseada_em_item/
-│   ├── Filtragem_colaborativa_baseada_em_usuario/
-│   └── Singular_value_decomposition/
-├── artigos/                                          # artigos científicos trabalhados em sala
-├── livros/                                           # bibliografia de apoio
-└── slides/                                           # slides das aulas
+├── materials/                     # plano de ensino oficial e anotações de aula
+├── papers/                        # artigos científicos trabalhados em sala
+├── books/                         # bibliografia de apoio
+├── slides/                        # slides das aulas
+├── implementations/               # implementações dos algoritmos vistos em aula
+│   ├── userbased-nearestneighbor/ # filtragem colaborativa baseada em usuário
+│   └── itembased-nearestneighbor/ # filtragem colaborativa baseada em item
+└── README.md
 ```
 
-### Artigos (`artigos/`)
+### Implementações (`implementations/`)
+
+Implementações em Python (biblioteca padrão apenas) dos algoritmos de
+filtragem colaborativa, com exemplos reproduzindo os slides da disciplina e
+testes automatizados. Veja o [README de `implementations/`](implementations/README.md)
+para a lista de métodos, o status de cada um e como preparar o ambiente para
+rodar o código e os testes.
+
+### Artigos (`papers/`)
 
 | Arquivo | Título | Resumo |
 |---|---|---|
-| `2207.05969.pdf` | Bootstrap Latent Representations for Multi-modal Recommendation (BM3) | Modelo auto-supervisionado que usa informações multimodais dos itens para melhorar a acurácia da recomendação sem grafos auxiliares nem amostragem negativa, com ganhos de eficiência computacional. |
 | `2304.04971.pdf` | Diffusion Recommender Model (DiffRec) | Aplica modelos de difusão a sistemas de recomendação para modelar interações do usuário lidando com ruído, predição em larga escala e mudanças temporais de preferência. |
-| `Paper marcado.pdf` | — | Artigo anotado/marcado para discussão em sala. |
+| `Paper marcado.pdf` | Diffusion Recommender Model (DiffRec) | Cópia anotada do artigo acima, usada para discussão em sala. |
 
-### Livros (`livros/`)
+### Livros (`books/`)
 
 - `Recommender_Systems.pdf` — material de apoio da bibliografia complementar (Ricci, Rokach, Shapira & Kantor; Jannach et al.; Aggarwal).
+
+### Materiais (`materials/`)
+
+- `2026.2-SistemasDeRecomendacao-planoDeEnsino.pdf` — plano de ensino oficial.
+- `notations.md` — notações/referências usadas em aula.
 
 ### Bibliografia complementar
 
