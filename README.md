@@ -59,23 +59,28 @@ Função do Sistema de Recomendação. Coleta de Informações. Estratégias de 
 ├── slides/                        # slides das aulas
 ├── implementations/               # implementações dos algoritmos vistos em aula
 │   ├── userbased-nearestneighbor/ # filtragem colaborativa baseada em usuário
-│   └── itembased-nearestneighbor/ # filtragem colaborativa baseada em item
+│   ├── itembased-nearestneighbor/ # filtragem colaborativa baseada em item
+│   └── diffrec/                   # reprodução experimental do artigo DiffRec
 └── README.md
 ```
 
 ### Implementações (`implementations/`)
 
-Implementações em Python (biblioteca padrão apenas) dos algoritmos de
+Implementações em Python dos algoritmos de
 filtragem colaborativa, com exemplos reproduzindo os slides da disciplina e
 testes automatizados. Veja o [README de `implementations/`](implementations/README.md)
 para a lista de métodos, o status de cada um e como preparar o ambiente para
 rodar o código e os testes.
 
+A [reprodução do DiffRec](implementations/diffrec/README.md) usa PyTorch e
+as partições oficiais de MovieLens-1M, Yelp e Amazon-book. Consulte o guia
+para baixar os dados, treinar os modelos e comparar as métricas com o artigo.
+
 ### Artigos (`papers/`)
 
 | Arquivo | Título | Resumo |
 |---|---|---|
-| `2304.04971.pdf` | Diffusion Recommender Model (DiffRec) | Aplica modelos de difusão a sistemas de recomendação para modelar interações do usuário lidando com ruído, predição em larga escala e mudanças temporais de preferência. |
+| `Diffrec - Diffusion Recommender Model.pdf` | Diffusion Recommender Model (DiffRec) | Aplica modelos de difusão a sistemas de recomendação para modelar interações do usuário lidando com ruído, predição em larga escala e mudanças temporais de preferência. |
 | `Paper marcado.pdf` | Diffusion Recommender Model (DiffRec) | Cópia anotada do artigo acima, usada para discussão em sala. |
 
 ### Livros (`books/`)
