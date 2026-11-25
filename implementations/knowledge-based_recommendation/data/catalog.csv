@@ -1,0 +1,9 @@
+id,price,mpix,opt_zoom,lcd_size,movies,sound,waterproof
+P1,148,8.0,4,2.5,no,no,yes
+P2,182,8.0,5,2.7,yes,yes,no
+P3,189,8.0,10,2.5,yes,yes,no
+P4,196,10.0,12,2.7,yes,no,yes
+P5,151,7.1,3,3.0,yes,yes,no
+P6,199,9.0,3,3.0,yes,yes,no
+P7,259,10.0,3,3.0,yes,yes,no
+P8,278,9.1,10,3.0,yes,yes,yes

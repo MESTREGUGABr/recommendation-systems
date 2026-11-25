@@ -24,6 +24,14 @@ codificadas aqui):
   grupo, poucas notas destoantes), um par de gostos opostos (grupos opostos,
   notas quase invertidas) e usuários com poucas avaliações.
 
+Conteúdo dos itens (para a filtragem baseada em conteúdo): além do
+`items.csv` básico (`item_id,title`) que os métodos colaborativos usam, a
+pasta `content-based_recommendation/data/` recebe um `items.csv` com as colunas
+`item_id,title,genre,description` — o gênero e uma lista de palavras-chave
+por item, sorteadas com um gerador de números aleatórios **separado** do das
+notas. Assim, acrescentar o conteúdo não altera as notas geradas para uma
+mesma semente.
+
 Uso (a partir de `implementations/`):
     python generate_dataset.py
     python generate_dataset.py --seed 7
@@ -44,9 +52,15 @@ MIN_RATINGS_PER_USER = 8
 RATING_SCALE = (1, 5)
 DEFAULT_SEED = 42
 
-# Pastas que recebem uma cópia idêntica da base gerada, para os dois métodos
+# Pastas que recebem uma cópia idêntica da base gerada, para os métodos
 # serem comparáveis sobre os mesmos dados.
-TARGET_DIRS = ("userbased-nearestneighbor", "itembased-nearestneighbor")
+TARGET_DIRS = (
+    "userbased-nearestneighbor",
+    "itembased-nearestneighbor",
+    "content-based_recommendation",
+)
+# Dentre elas, as que também precisam do conteúdo dos itens (gênero + palavras-chave).
+CONTENT_DIRS = ("content-based_recommendation",)
 
 # Pool de itens com gênero predominante; o gerador sorteia quantos (e quais)
 # entram na base de cada execução. Usuários de um grupo tendem a gostar mais
@@ -93,6 +107,22 @@ AFFINITY: dict[str, dict[str, float]] = {
     "drama":  {"acao": 2.2, "drama": 4.5, "ficcao": 2.6},
     "ficcao": {"acao": 3.1, "drama": 2.4, "ficcao": 4.3},
 }
+
+# Palavras-chave por gênero (conteúdo dos itens). Cada item recebe a maioria
+# delas do próprio gênero, mais algumas "de fora" (do outro gênero ou
+# genéricas), para o conteúdo ajudar sem entregar o gênero de bandeja.
+KEYWORDS_PER_ITEM = (5, 7)
+OWN_GENRE_SHARE = 0.7
+GENRE_KEYWORDS: dict[str, list[str]] = {
+    "acao": ["perseguição", "explosão", "tiroteio", "resgate", "missão", "agente",
+             "vingança", "luta", "fuga", "arma", "polícia", "batalha"],
+    "drama": ["família", "amor", "saudade", "perda", "reconciliação", "casamento",
+              "luto", "amizade", "memória", "segredo", "superação", "infância"],
+    "ficcao": ["espaço", "robô", "futuro", "planeta", "tecnologia", "alienígena",
+               "nave", "distopia", "simulação", "galáxia", "androide", "paradoxo"],
+}
+SHARED_KEYWORDS = ["mistério", "jornada", "traição", "descoberta", "sobrevivência",
+                   "cidade", "ameaça", "destino"]
 
 
 def _clamp_rating(value: float) -> int:
@@ -195,8 +225,31 @@ def _ensure_item_coverage(rng, user_ids, items, add_rating, min_raters: int) -> 
             add_rating(user_id, item_id, base)
 
 
+def generate_item_content(items: list[tuple[str, str, str]],
+                          seed: int = DEFAULT_SEED) -> dict[str, str]:
+    """Sorteia a lista de palavras-chave de cada item (`item_id -> descrição`).
+
+    Usa um gerador próprio (derivado da semente), separado do das notas:
+    assim o conteúdo pode evoluir sem mudar as notas de uma semente já usada.
+    """
+    rng = random.Random(f"content-{seed}")
+    content: dict[str, str] = {}
+    for item_id, _title, genre in items:
+        n_keywords = rng.randint(*KEYWORDS_PER_ITEM)
+        n_own = max(3, round(n_keywords * OWN_GENRE_SHARE))
+        own = rng.sample(GENRE_KEYWORDS[genre], n_own)
+        outside_pool = [word for other in GENRES if other != genre
+                        for word in GENRE_KEYWORDS[other]] + SHARED_KEYWORDS
+        outside = rng.sample(outside_pool, n_keywords - n_own)
+        words = own + outside
+        rng.shuffle(words)
+        content[item_id] = " ".join(words)
+    return content
+
+
 def write_dataset(rows: list[tuple[str, str, int]], items: list[tuple[str, str, str]],
-                   out_dir: Path) -> None:
+                   out_dir: Path, content: dict[str, str] | None = None) -> None:
+    """Grava ratings.csv e items.csv; com `content`, items.csv ganha gênero e descrição."""
     out_dir.mkdir(parents=True, exist_ok=True)
     ratings_path = out_dir / "ratings.csv"
     items_path = out_dir / "items.csv"
@@ -208,9 +261,14 @@ def write_dataset(rows: list[tuple[str, str, int]], items: list[tuple[str, str, 
 
     with items_path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["item_id", "title"])
-        for item_id, title, _genre in items:
-            writer.writerow([item_id, title])
+        if content is None:
+            writer.writerow(["item_id", "title"])
+            for item_id, title, _genre in items:
+                writer.writerow([item_id, title])
+        else:
+            writer.writerow(["item_id", "title", "genre", "description"])
+            for item_id, title, genre in items:
+                writer.writerow([item_id, title, genre, content[item_id]])
 
 
 def main() -> None:
@@ -219,10 +277,12 @@ def main() -> None:
     args = parser.parse_args()
 
     rows, items = generate_ratings(args.seed)
+    content = generate_item_content(items, args.seed)
 
     base_dir = Path(__file__).parent
     for target in TARGET_DIRS:
-        write_dataset(rows, items, base_dir / target / "data")
+        write_dataset(rows, items, base_dir / target / "data",
+                      content if target in CONTENT_DIRS else None)
 
     users = {user for user, _item, _rating in rows}
     rated_items = {item for _user, item, _rating in rows}

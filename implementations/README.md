@@ -1,14 +1,17 @@
 # Implementações
 
 Implementações em Python puro (sem dependências externas) dos algoritmos de
-filtragem colaborativa vistos na disciplina, usando a mesma base dummy de
-avaliações (gerada por [`generate_dataset.py`](generate_dataset.py)) para
-permitir comparar os métodos entre si.
+filtragem colaborativa, baseada em conteúdo e baseada em conhecimento vistos na
+disciplina. Os métodos colaborativos e o de conteúdo usam a mesma base dummy de
+avaliações (gerada por [`generate_dataset.py`](generate_dataset.py)), o que
+permite compará-los entre si; o baseado em conhecimento usa um catálogo próprio.
 
 | Pasta | Método | Status |
 |---|---|---|
 | [`userbased-nearestneighbor`](userbased-nearestneighbor) | Filtragem colaborativa baseada em **usuário** (similaridade de Pearson) | Algoritmo + avaliação (MAE/RMSE/cobertura) |
 | [`itembased-nearestneighbor`](itembased-nearestneighbor) | Filtragem colaborativa baseada em **item** (cosseno ajustado) | Algoritmo + exemplo; avaliação pendente |
+| [`content-based_recommendation`](content-based_recommendation) | Filtragem baseada em **conteúdo** (TF-IDF + cosseno; vizinhos mais próximos e perfil de Rocchio) | Algoritmo + avaliação (MAE/RMSE/cobertura e Precision/Recall@N) |
+| [`knowledge-based_recommendation`](knowledge-based_recommendation) | Recomendação **baseada em conhecimento** (Slide 4): consulta conjuntiva, QuickXPlain, diagnósticos e reparos, utilidade multiatributo e casos com críticas | Algoritmo + exemplo do capítulo (câmeras P1 a P8) conferido com o slide; sem avaliação (não usa notas) |
 
 ## Terminal navegável
 
@@ -23,12 +26,16 @@ py menu.py
 Ele guia em 3 passos:
 
 1. **Base de dados** — gerar/regerar ou pular.
-2. **Escolher o algoritmo** (user-based ou item-based) — ao entrar, já roda
-   o exemplo do slide respondendo as 3 perguntas de todo KNN: **1.
-   similaridade**, **2. quantos vizinhos**, **3. nota estimada**.
+2. **Escolher o algoritmo** (user-based, item-based, content-based ou
+   knowledge-based) — ao entrar, já roda o exemplo do slide. Nos KNN colaborativos, responde as 3
+   perguntas: **1. similaridade**, **2. quantos vizinhos**, **3. nota
+   estimada**. No content-based, mostra o TF-IDF dos itens, o cosseno com o
+   perfil e o ranking. No knowledge-based, reproduz o exemplo das câmeras do
+   capítulo (usa o catálogo próprio `data/catalog.csv`, não a base de notas).
 3. **O que fazer com ele** — treinar com a base real e recomendar pra um
-   usuário, ou (só no user-based) avaliar o modelo (MAE/RMSE sobre notas
-   escondidas de teste).
+   usuário, ou (no user-based e no content-based) avaliar o modelo (MAE/RMSE
+   sobre notas escondidas de teste; o content-based também mede
+   Precision/Recall@N do perfil).
 
 Os parâmetros são pedidos só quando fazem sentido (ex.: pra qual usuário
 recomendar, ou os parâmetros da avaliação), com um padrão sensato se você só
@@ -38,8 +45,9 @@ apertar Enter. Sai com `0` em qualquer passo.
 
 `generate_dataset.py` escreve `data/ratings.csv` (`user_id,item_id,rating`) e
 `data/items.csv` (`item_id,title`) **direto dentro de cada pasta de
-implementação** (`userbased-nearestneighbor/data/` e
-`itembased-nearestneighbor/data/`), com uma cópia idêntica nas duas — nada
+implementação** (`userbased-nearestneighbor/data/`,
+`itembased-nearestneighbor/data/` e `content-based_recommendation/data/`), com
+uma cópia idêntica das notas em todas — nada
 manual, nada pedido a um LLM.
 
 O tamanho da base é sorteado a cada execução, não fixo: entre 22 e 38
